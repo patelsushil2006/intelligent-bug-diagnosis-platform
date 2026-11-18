@@ -1,0 +1,205 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Bug Diagnosis Report</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+    <main class="container">
+
+        <h1>Bug Diagnosis Report</h1>
+
+        <p>
+            <strong>File:</strong> {{ filename }}
+        </p>
+
+        <p>
+            <strong>Language:</strong> {{ language|upper }}
+        </p>
+
+        {% if bugs %}
+
+            <h2>Detected Issues ({{ bugs|length }})</h2>
+
+            {% for bug in bugs %}
+
+                <section class="bug-card">
+
+                    <h3>
+                        {{ bug.type }} — Line {{ bug.line }}
+                    </h3>
+
+                    <p>
+                        <strong>Severity:</strong>
+                        {{ bug.severity }}
+                    </p>
+
+                    <p>
+                        <strong>Analyzer Message:</strong>
+                    </p>
+
+                    <pre class="message">{{ bug.message }}</pre>
+
+                    <p>
+                        <strong>Explanation:</strong>
+                        {{ bug.explanation }}
+                    </p>
+
+                    <p>
+                        <strong>Recommended Fix:</strong>
+                        {{ bug.recommendation }}
+                    </p>
+
+                </section>
+
+            {% endfor %}
+
+        {% else %}
+
+            <section class="success">
+
+                <h2>No Syntax Errors Detected</h2>
+
+                <p>
+                    The selected analyzer did not report a syntax error.
+                    This does not guarantee that the program is free
+                    from logical or runtime bugs.
+                </p>
+
+            </section>
+
+        {% endif %}
+
+
+        <h2>Submitted Source Code</h2>
+
+        <pre class="code"><code>{{ code }}</code></pre>
+
+
+        <h2>Corrected Code</h2>
+
+        {% if corrected_code %}
+
+            <pre class="code" id="correctedCode"><code>{{ corrected_code }}</code></pre>
+
+            <button type="button" onclick="copyCorrectedCode()">
+                Copy Corrected Code
+            </button>
+
+            <button type="button" onclick="downloadCorrectedCode()">
+                Download Corrected Code</button>
+
+        {% else %}
+
+            <p>
+                No automatic correction was available for this code.
+                Please follow the recommended fix above.
+            </p>
+
+        {% endif %}
+
+
+        {% if corrected_code %}
+
+            <h2>Correction Validation</h2>
+
+            {% if corrected_bugs is not none and corrected_bugs|length == 0 %}
+
+                <section class="success">
+
+                    <h3>Correction Successful!</h3>
+
+                    <p>
+                        The corrected code passed the syntax check.
+                    </p>
+
+                </section>
+
+            {% elif corrected_bugs is not none %}
+
+                <section class="bug-card">
+
+                    <h3>Some Issues Remain</h3>
+
+                    <p>
+                        The corrected code still contains
+                        {{ corrected_bugs|length }} detected issue(s).
+                    </p>
+
+                    {% for bug in corrected_bugs %}
+
+                        <p>
+                            <strong>Line {{ bug.line }}:</strong>
+                            {{ bug.message }}
+                        </p>
+
+                    {% endfor %}
+
+                </section>
+
+            {% else %}
+
+                <p>
+                    Correction validation was not performed.
+                </p>
+
+            {% endif %}
+
+        {% endif %}
+
+
+        <br><br>
+
+        <a href="{{ url_for('dashboard') }}" class="button secondary">
+            Analyze Another File
+        </a>
+
+    </main>
+
+
+    <script>
+
+        function downloadCorrectedCode() {
+            const codeElement = document.getElementById("correctedCode");
+            if (!codeElement) {
+                alert("Corrected code is not available.");
+                return;
+            }
+            const code = codeElement.innerText;
+            const originalFilename = {{ filename|tojson }};
+            
+            const blob = new Blob([code], {
+                type: "text/plain;charset=utf-8"
+            });
+            
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            
+            link.href = url;
+            link.download = "corrected_" + originalFilename;
+            link.style.display = "none";
+
+            document.body.appendChild(link);
+            link.click();
+
+            document.body.removeChild(link);
+            
+            // Keep the download URL alive briefly.
+            setTimeout(function () {
+                URL.revokeObjectURL(url);
+            }, 2000);
+        }
+
+
+    </script>
+
+</body>
+</html>

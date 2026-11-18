@@ -1,0 +1,44 @@
+Byte-compiled / optimized / DLL files
+
+pycache/ *.py[cod] *$py.class
+
+Environments
+
+venv/ .venv/ env/
+
+Databases & Vector store
+
+*.db .sqlite3 vector_store/data/ chroma_db/ uploads/ !uploads/.gitkeep
+
+Pytest / Coverage
+
+.pytest_cache/ .coverage htmlcov/
+
+Environment Variables / Secrets
+
+.env .env.* !.env.example
+
+OS files
+
+.DS_Store Thumbs.db
+
+IDE
+
+.vscode/ .idea/
+
+Logs
+
+*.log
+
+Build artifacts
+
+build/ dist/ *.egg-info/
+# Additional exclusions
+.env
+.DS_Store
+__pycache__/
+env/
+*.db
+chroma_db/
+.vscode/
+vector_store/data/

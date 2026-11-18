@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Bug History — Intelligent Bug Diagnosis Platform{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-header flex-between">
+        <div>
+            <h2>Submitted Bug Reports</h2>
+            <p>Track all diagnosed software defects, execution status, and historical reports.</p>
+        </div>
+        <a href="{{ url_for('web.submit') }}" class="btn btn-primary">+ Submit New Bug</a>
+    </div>
+
+    <div class="card">
+        <div class="card-body p-0">
+            {% if bugs %}
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Bug Title</th>
+                            <th>Language</th>
+                            <th>Severity</th>
+                            <th>Status</th>
+                            <th>Submitted At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for bug in bugs %}
+                        {% set status = runs_map.get(bug.bug_id, 'UNANALYZED') %}
+                        <tr>
+                            <td>
+                                <strong>{{ bug.title }}</strong>
+                                {% if bug.description %}
+                                <div class="text-muted text-sm">{{ bug.description[:80] }}...</div>
+                                {% endif %}
+                            </td>
+                            <td><span class="tag tag-lang">{{ bug.language }}</span></td>
+                            <td><span class="tag tag-{{ bug.severity|lower }}">{{ bug.severity }}</span></td>
+                            <td>
+                                <span class="status-badge status-{{ status|lower }}">
+                                    {{ status }}
+                                </span>
+                            </td>
+                            <td>{{ bug.created_at[:16].replace('T', ' ') if bug.created_at else 'Recent' }}</td>
+                            <td>
+                                <a href="{{ url_for('web.results', bug_id=bug.bug_id) }}" class="btn btn-sm btn-outline">
+                                    View Report
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="empty-state">
+                    <p>No bugs recorded yet.</p>
+                    <a href="{{ url_for('web.submit') }}" class="btn btn-primary mt-2">Submit Your First Bug</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

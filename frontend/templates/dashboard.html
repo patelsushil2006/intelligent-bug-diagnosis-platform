@@ -1,0 +1,80 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Code Diagnosis</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+    <main class="container">
+
+        <h1>Submit Code for Diagnosis</h1>
+
+        {% if error %}
+            <p class="alert">{{ error }}</p>
+        {% endif %}
+
+        <form method="POST" enctype="multipart/form-data">
+
+            <label for="language">
+                Select Programming Language
+            </label>
+
+            <select name="language" id="language" required>
+
+                {% for language in languages %}
+
+                    <option value="{{ language }}">
+                        {{ language|upper }}
+                    </option>
+
+                {% endfor %}
+
+            </select>
+
+            <label for="code">
+                Paste Your Source Code
+            </label>
+
+            <textarea
+                name="code"
+                id="code"
+                rows="16"
+                placeholder="Paste your code here..."
+            ></textarea>
+
+            <label for="code_file">
+                Or Upload a Source File
+            </label>
+
+            <input
+                type="file"
+                name="code_file"
+                id="code_file"
+                accept=".py,.js,.ts,.java,.c,.h,.cpp,.cc,.cxx,.hpp,.cs,.php,.go"
+            >
+
+            <button type="submit">
+                Analyze Code
+            </button>
+
+        </form>
+        
+        <div class="history-button-container">
+            <a href="{{ url_for('history') }}" class="button secondary">
+                View Bug History
+            </a>
+        </div>
+
+
+    </main>
+
+</body>
+</html>

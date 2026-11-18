@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Historical Defect Knowledge Base — Intelligent Bug Diagnosis Platform{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-header flex-between">
+        <div>
+            <h2>Historical Defect Knowledge Base</h2>
+            <p>Curated software defect records from Mozilla, Apache, and Eclipse archives embedded for RAG semantic retrieval.</p>
+        </div>
+        <form action="{{ url_for('web.seed_knowledge_base') }}" method="POST">
+            <button type="submit" class="btn btn-secondary">⚡ Populate / Refresh Seeds</button>
+        </form>
+    </div>
+
+    <!-- Knowledge Base Stats -->
+    <div class="stats-grid mb-4">
+        <div class="stat-card">
+            <div class="stat-icon">📑</div>
+            <div class="stat-value">{{ total_count }}</div>
+            <div class="stat-label">Relational Defect Records</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🧬</div>
+            <div class="stat-value">{{ vector_count }}</div>
+            <div class="stat-label">ChromaDB Vector Chunks</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🌐</div>
+            <div class="stat-value">3</div>
+            <div class="stat-label">Active Adapters (Mozilla, Apache, Eclipse)</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🎯</div>
+            <div class="stat-value">all-MiniLM-L6-v2</div>
+            <div class="stat-label">Embedding Model (384-dim)</div>
+        </div>
+    </div>
+
+    <!-- Defect Records Table -->
+    <div class="card">
+        <div class="card-header">
+            <h3>Indexed Historical Software Defects</h3>
+        </div>
+        <div class="card-body p-0">
+            {% if defects %}
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Defect ID</th>
+                            <th>Source</th>
+                            <th>Project</th>
+                            <th>Title &amp; Summary</th>
+                            <th>Language</th>
+                            <th>Resolution</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for d in defects %}
+                        <tr>
+                            <td><code>{{ d.defect_id }}</code></td>
+                            <td><span class="tag tag-source">{{ d.source }}</span></td>
+                            <td>{{ d.project }}</td>
+                            <td>
+                                <strong>{{ d.title }}</strong>
+                                <div class="text-muted text-sm mt-1">{{ d.description[:120] }}...</div>
+                            </td>
+                            <td><span class="tag tag-lang">{{ d.language }}</span></td>
+                            <td>
+                                <span class="text-sm">{{ d.resolution[:100] }}...</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="empty-state">
+                    <p>The knowledge base is currently empty.</p>
+                    <form action="{{ url_for('web.seed_knowledge_base') }}" method="POST" class="mt-2">
+                        <button type="submit" class="btn btn-primary">Seed Curated Historical Defects</button>
+                    </form>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}Diagnosis Report — {{ bug.title }}{% endblock %}
+
+{% block content %}
+<div class="page-container" id="results-container" data-bug-id="{{ bug.bug_id }}">
+    <div class="results-header flex-between mb-4">
+        <div>
+            <div class="breadcrumbs">
+                <a href="{{ url_for('web.history') }}">&larr; Back to Bug History</a>
+            </div>
+            <h2>{{ bug.title }}</h2>
+            <div class="meta-tags mt-2">
+                <span class="tag tag-lang">{{ bug.language }}</span>
+                <span class="tag tag-{{ bug.severity|lower }}">{{ bug.severity }}</span>
+                <span class="tag tag-id">ID: {{ bug.bug_id[:8] }}</span>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button id="re-analyze-btn" class="btn btn-outline" onclick="triggerAnalysis('{{ bug.bug_id }}')">Re-run Analysis</button>
+        </div>
+    </div>
+
+    <!-- Live Analysis Status Indicator -->
+    <div id="analysis-loading-banner" class="alert alert-info d-none">
+        <span class="spinner-dot"></span> Multi-agent intelligence pipeline is executing...
+    </div>
+
+    <div id="report-view">
+        <!-- Root Cause & Confidence -->
+        <div class="card diagnosis-card mb-4">
+            <div class="card-header flex-between">
+                <h3>Root Cause Diagnosis</h3>
+                <span id="confidence-badge" class="badge badge-confidence">Confidence: Calculating...</span>
+            </div>
+            <div class="card-body">
+                <h4 id="root-cause-title" class="root-cause-text">Loading root cause...</h4>
+                <p id="root-cause-explanation" class="text-muted"></p>
+                
+                <div class="evidence-box mt-3">
+                    <strong>Supporting Evidence:</strong>
+                    <ul id="evidence-list" class="evidence-list"></ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fix Recommendation Card -->
+        <div class="card fix-card mb-4">
+            <div class="card-header">
+                <h3>Recommended Remediation & Fix</h3>
+            </div>
+            <div class="card-body">
+                <div id="fix-explanation" class="fix-explanation mb-3"></div>
+
+                <div id="commands-section" class="commands-section mb-3 d-none">
+                    <label><strong>Execution Commands:</strong></label>
+                    <pre><code id="commands-code" class="font-code"></code></pre>
+                    <small class="text-danger">&bull; Review commands before manual terminal execution. Potentially disruptive commands are never run automatically.</small>
+                </div>
+
+                <div id="verification-section" class="verification-section mb-3 d-none">
+                    <label><strong>Verification Step:</strong></label>
+                    <pre><code id="verification-code" class="font-code"></code></pre>
+                </div>
+
+                <div id="risks-section" class="risks-section d-none">
+                    <label><strong>Risks & Considerations:</strong></label>
+                    <p id="risks-text" class="text-muted"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Agent Execution Details Grid -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>Specialized Agent Execution Breakdown</h3>
+            </div>
+            <div class="card-body">
+                <div class="agents-grid">
+                    <div class="agent-card">
+                        <div class="agent-title">🎯 Triage Agent</div>
+                        <div id="agent-triage-body" class="agent-body">Analyzing...</div>
+                    </div>
+                    <div class="agent-card">
+                        <div class="agent-title">📜 Log Analysis Agent</div>
+                        <div id="agent-log-body" class="agent-body">Analyzing...</div>
+                    </div>
+                    <div class="agent-card">
+                        <div class="agent-title">🔍 Duplicate Detection Agent</div>
+                        <div id="agent-dup-body" class="agent-body">Analyzing...</div>
+                    </div>
+                    <div class="agent-card">
+                        <div class="agent-title">🧠 Root Cause Agent</div>
+                        <div id="agent-rc-body" class="agent-body">Analyzing...</div>
+                    </div>
+                    <div class="agent-card">
+                        <div class="agent-title">🛠️ Remediation Agent</div>
+                        <div id="agent-rem-body" class="agent-body">Analyzing...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Similar Historical Defect Evidence -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>Retrieved Historical Defect Evidence (RAG)</h3>
+            </div>
+            <div class="card-body p-0">
+                <div id="historical-defects-list">
+                    <p class="p-3 text-muted">Retrieving historical defects from ChromaDB...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feedback Card -->
+        <div class="card feedback-card mb-4">
+            <div class="card-header">
+                <h3>Was this diagnosis helpful?</h3>
+            </div>
+            <div class="card-body">
+                <form id="feedback-form">
+                    <div class="form-row mb-3">
+                        <div class="col-md-6">
+                            <label>Accuracy</label>
+                            <select id="is-accurate" class="form-control">
+                                <option value="true">Accurate &amp; Helpful</option>
+                                <option value="false">Inaccurate or Misleading</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label>Rating (1 to 5 Stars)</label>
+                            <select id="rating" class="form-control">
+                                <option value="5">⭐⭐⭐⭐⭐ (5/5)</option>
+                                <option value="4">⭐⭐⭐⭐ (4/5)</option>
+                                <option value="3">⭐⭐⭐ (3/5)</option>
+                                <option value="2">⭐⭐ (2/5)</option>
+                                <option value="1">⭐ (1/5)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label>Developer Feedback / Resolution Notes</label>
+                        <textarea id="feedback-text" class="form-control" rows="2" placeholder="Help improve the historical defect knowledge base..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-secondary">Submit Feedback</button>
+                    <span id="feedback-success" class="text-success d-none ml-2">Feedback saved!</span>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const bugId = "{{ bug.bug_id }}";
+        loadBugResults(bugId);
+    });
+</script>
+{% endblock %}

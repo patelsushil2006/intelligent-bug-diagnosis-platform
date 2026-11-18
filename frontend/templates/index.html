@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Overview — Intelligent Bug Diagnosis Platform{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <div class="hero-section">
+        <h1 class="hero-title">Intelligent Bug Diagnosis Platform</h1>
+        <p class="hero-subtitle">
+            Automated defect analysis, stack trace inspection, historical RAG matching across Mozilla, Apache, and Eclipse, and evidence-based fix recommendations powered by multi-agent intelligence.
+        </p>
+        <div class="hero-actions">
+            <a href="{{ url_for('web.submit') }}" class="btn btn-primary">Submit a Bug Report</a>
+            <a href="{{ url_for('web.knowledge_base') }}" class="btn btn-secondary">Explore Knowledge Base</a>
+        </div>
+    </div>
+
+    <!-- Platform Metrics -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon">🐞</div>
+            <div class="stat-value">{{ total_bugs }}</div>
+            <div class="stat-label">Total Submitted Bugs</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🧠</div>
+            <div class="stat-value">{{ total_runs }}</div>
+            <div class="stat-label">Agent Analysis Runs</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">📚</div>
+            <div class="stat-value">{{ total_historical }}</div>
+            <div class="stat-label">Historical Defects</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">🔍</div>
+            <div class="stat-value">{{ vector_chunks }}</div>
+            <div class="stat-label">ChromaDB Indexed Chunks</div>
+        </div>
+    </div>
+
+    <!-- Workflow Architecture -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3>Diagnostic Multi-Agent Workflow</h3>
+        </div>
+        <div class="card-body">
+            <div class="workflow-steps">
+                <div class="workflow-step">
+                    <span class="step-num">1</span>
+                    <strong>Intake & Parsing</strong>
+                    <p>Stack trace parsing, log normalization, language detection</p>
+                </div>
+                <div class="workflow-arrow">&rarr;</div>
+                <div class="workflow-step">
+                    <span class="step-num">2</span>
+                    <strong>Triage Agent</strong>
+                    <p>Category, severity rating, and keyword extraction</p>
+                </div>
+                <div class="workflow-arrow">&rarr;</div>
+                <div class="workflow-step">
+                    <span class="step-num">3</span>
+                    <strong>Parallel RAG & Logs</strong>
+                    <p>Historical defect matching & execution frame analysis</p>
+                </div>
+                <div class="workflow-arrow">&rarr;</div>
+                <div class="workflow-step">
+                    <span class="step-num">4</span>
+                    <strong>Root Cause Agent</strong>
+                    <p>Synthesizes evidence with confidence scoring</p>
+                </div>
+                <div class="workflow-arrow">&rarr;</div>
+                <div class="workflow-step">
+                    <span class="step-num">5</span>
+                    <strong>Remediation Agent</strong>
+                    <p>Actionable fixes, commands & verification steps</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Submissions -->
+    <div class="card">
+        <div class="card-header flex-between">
+            <h3>Recent Submissions</h3>
+            <a href="{{ url_for('web.history') }}" class="link-action">View All &rarr;</a>
+        </div>
+        <div class="card-body p-0">
+            {% if recent_bugs %}
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Bug Title</th>
+                            <th>Language</th>
+                            <th>Severity</th>
+                            <th>Created At</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for bug in recent_bugs %}
+                        <tr>
+                            <td><strong>{{ bug.title }}</strong></td>
+                            <td><span class="tag tag-lang">{{ bug.language }}</span></td>
+                            <td><span class="tag tag-{{ bug.severity|lower }}">{{ bug.severity }}</span></td>
+                            <td>{{ bug.created_at[:16].replace('T', ' ') if bug.created_at else 'Recent' }}</td>
+                            <td>
+                                <a href="{{ url_for('web.results', bug_id=bug.bug_id) }}" class="btn btn-sm btn-outline">View Diagnosis</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="empty-state">
+                    <p>No bugs submitted yet. <a href="{{ url_for('web.submit') }}">Submit your first bug report</a>.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
