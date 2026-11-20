@@ -1,0 +1,1 @@
+Archived prototype scripts from an early source-code-linting experiment. Superseded by the RAG + multi-agent architecture in agents/ and knowledge_base/. Kept for provenance only. Not imported by app.py.

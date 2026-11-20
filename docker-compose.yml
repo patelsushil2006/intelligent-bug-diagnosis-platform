@@ -1,0 +1,25 @@
+version: "3.8"
+
+services:
+  app:
+    build: .
+    ports:
+      - "5001:5001"
+    env_file:
+      - .env
+    volumes:
+      - vector_store_data:/app/vector_store/data
+      - database_data:/app/database
+      - uploads_data:/app/uploads
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5001/api/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+volumes:
+  vector_store_data:
+  database_data:
+  uploads_data:

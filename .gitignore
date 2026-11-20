@@ -1,44 +1,49 @@
-Byte-compiled / optimized / DLL files
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
 
-pycache/ *.py[cod] *$py.class
+# Environments
+env/
+.venv/
+venv/
 
-Environments
+# Databases & Vector store
+*.db
+*.sqlite3
+vector_store/data/
+chroma_db/
+uploads/
+!uploads/.gitkeep
 
-venv/ .venv/ env/
+# Pytest / Coverage / Caches
+.pytest_cache/
+.coverage
+htmlcov/
+.ruff_cache/
+.mypy_cache/
 
-Databases & Vector store
+# Environment Variables / Secrets
+.env
+.env.*
+!.env.example
 
-*.db .sqlite3 vector_store/data/ chroma_db/ uploads/ !uploads/.gitkeep
+# Evaluation artifacts
+evaluation/reports/*.json
 
-Pytest / Coverage
+# OS files
+.DS_Store
+Thumbs.db
 
-.pytest_cache/ .coverage htmlcov/
+# IDE
+.vscode/
+.idea/
 
-Environment Variables / Secrets
-
-.env .env.* !.env.example
-
-OS files
-
-.DS_Store Thumbs.db
-
-IDE
-
-.vscode/ .idea/
-
-Logs
-
+# Logs
 *.log
 
-Build artifacts
-
-build/ dist/ *.egg-info/
-# Additional exclusions
-.env
-.DS_Store
-__pycache__/
-env/
-*.db
-chroma_db/
-.vscode/
-vector_store/data/
+# Build artifacts
+build/
+dist/
+*.egg-info/

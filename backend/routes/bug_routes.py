@@ -43,9 +43,23 @@ def submit_bug():
         )
         bug_dict = bug.to_dict()
 
+    # Synchronously execute multi-agent diagnostic run
+    try:
+        report = orchestrator.run_diagnosis(
+            bug_id=bug_dict["bug_id"],
+            title=title,
+            description=desc,
+            stack_trace=stack,
+            log_content=logs,
+            language=lang
+        )
+    except Exception as e:
+        report = {"error": f"Diagnosis execution failed: {str(e)}"}
+
     return jsonify({
         "message": "Bug report submitted successfully.",
-        "bug": bug_dict
+        "bug": bug_dict,
+        "analysis": report
     }), 201
 
 

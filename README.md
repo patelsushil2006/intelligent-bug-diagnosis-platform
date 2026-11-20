@@ -1,170 +1,106 @@
-# Intelligent Bug Diagnosis Platform with Fix Recommendation Assistance
+# Intelligent Bug Diagnosis Platform
 
-[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
-[![Flask 3.1](https://img.shields.io/badge/framework-Flask%203.1-black.svg)](https://flask.palletsprojects.com/)
-[![ChromaDB](https://img.shields.io/badge/vector%20db-ChromaDB-purple.svg)](https://www.trychroma.com/)
-[![Pytest](https://img.shields.io/badge/tests-25%20passed-brightgreen.svg)](https://pytest.org/)
+An enterprise-grade platform that automates software defect diagnosis and fix recommendations by combining stack-trace parsing, multi-agent reasoning, and Retrieval-Augmented Generation (RAG). By grounding analysis in historical defect archives from Mozilla, Apache, and Eclipse, it helps engineering teams isolate root causes and resolve production incidents faster.
 
-An enterprise-grade, modular, intelligent bug diagnosis platform that accepts software defect reports, parses error logs and stack traces, retrieves relevant historical defects from **Mozilla**, **Apache**, and **Eclipse** defect datasets using **Retrieval-Augmented Generation (RAG)**, isolates root causes through 5 specialized AI agents, and delivers actionable, evidence-based fix recommendations.
+## Architecture
 
----
+```mermaid
+flowchart TD
+    UI["Presentation Layer<br/>(Dashboard, Submission, Results, Knowledge Base)"]
+    API["Application & API Layer<br/>(Flask REST APIs: /api/bugs, /api/health)"]
+    INTAKE["Bug Intake & Processing Layer<br/>(Stack Parser, Log Parser, Language Detector, Sanitizer)"]
+    
+    subgraph Storage ["Data Storage Layer"]
+        SQL["SQLite Relational DB<br/>(BugReport, AnalysisRun, AgentResult)"]
+        CHROMA["ChromaDB Vector Store<br/>(Defect Chunks & 384-d Embeddings)"]
+    end
 
-## 🚀 Key Features
+    subgraph Agents ["Multi-Agent Intelligence Layer"]
+        ORCH["Agent Orchestrator"]
+        TRIAGE["Agent 1: Triage"]
+        LOGS["Agent 2: Log Analysis"]
+        DUP["Agent 3: Duplicate Detection (RAG)"]
+        RC["Agent 4: Root Cause"]
+        REM["Agent 5: Remediation"]
+    end
 
-- **Multi-Source Intake & Parsing:** Handles bug titles, markdown descriptions, stack traces, and correlated log excerpts. Supports direct uploads (`.txt`, `.log`, `.json`, `.csv`, `.py`, `.java`, `.js`, `.ts`, `.cpp`).
-- **Automated Stack & Log Parsing:** Extracts exception types, message bodies, file paths, line numbers, and execution call depth for Python, Java, JavaScript, C++, and Go.
-- **RAG Defect Knowledge Base:** Ingests historical software defect datasets (Mozilla Bugzilla, Apache Jira, Eclipse Bugzilla) with schema normalization, semantic chunking, and 384-dimensional dense vector embeddings (`sentence-transformers/all-MiniLM-L6-v2`).
-- **ChromaDB Persistent Vector Store:** Provides sub-millisecond semantic search, metadata filtering (language, status, component), and cosine similarity ranking.
-- **5 Specialized Diagnostic AI Agents:**
-  1. **Triage Agent:** Categorizes errors into 9 classes and estimates severity.
-  2. **Log Analysis Agent:** Pinpoints exact failure locations and isolates user code from framework frames.
-  3. **Duplicate Detection Agent:** Matches incoming defects against historical defect records via RAG.
-  4. **Root Cause Agent:** Synthesizes triage, log frames, and historical resolutions into an evidence-based diagnosis with confidence scoring.
-  5. **Remediation Agent:** Generates actionable code fixes, terminal commands, and verification tests.
-- **Provider-Independent LLM Engine:** Supports live cloud LLMs (Google Gemini, OpenAI) with a **deterministic offline rule-based fallback mode** ensuring 100% functionality without internet access or API keys.
-- **Modern Presentation Layer:** Responsive developer dashboard with real-time analysis polling, agent breakdown cards, historical evidence explorer, and feedback collection.
-- **Comprehensive Test Suite:** 25 automated unit and integration tests across all modules.
-
----
-
-## 🏛️ System Architecture
-
-```
-Bug Submission (Web / REST API)
-               │
-               ▼
-   Bug Intake & Processing Layer
-(Input Validation ➔ Stack Parser ➔ Log Parser ➔ Sanitizer)
-               │
-               ▼
-       Agent Orchestrator
-               │
-               ▼
-         Triage Agent
-               │
-        ┌──────┴──────┐
-        ▼             ▼
-   Log Analysis   Duplicate Detection (RAG)
-      Agent             Agent ◄──► ChromaDB Vector Store
-        └──────┬──────┘
-               ▼
-       Root Cause Agent
-               │
-               ▼
-       Remediation Agent
-               │
-               ▼
-    Complete Diagnosis Report
-               │
-        ┌──────┴──────┐
-        ▼             ▼
-Relational Storage  Interactive Web Dashboard
-   (SQLite)            & Feedback Loop
+    UI --> API
+    API --> INTAKE
+    INTAKE --> Storage
+    API --> ORCH
+    ORCH --> TRIAGE
+    TRIAGE --> LOGS
+    TRIAGE --> DUP
+    DUP <--> CHROMA
+    LOGS --> RC
+    DUP --> RC
+    RC --> REM
+    REM --> Storage
+    REM --> API
+    API --> UI
 ```
 
----
+## Measured Accuracy
 
-## 🛠️ Technology Stack
-
-| Layer | Technologies |
+| Metric | Measured Accuracy (n=15) |
 | :--- | :--- |
-| **Presentation** | HTML5, CSS3, JavaScript (Fetch API), JetBrains Mono, Plus Jakarta Sans |
-| **Backend & API** | Python 3.14 / 3.10+, Flask 3.1, Werkzeug |
-| **Relational DB** | SQLite via SQLAlchemy 2.0 ORM (7 relational entities) |
-| **Vector DB** | ChromaDB 1.5+ |
-| **Embeddings** | SentenceTransformers (`all-MiniLM-L6-v2`, 384 dimensions) |
-| **Testing** | Pytest 9.2 (25 unit & integration tests) |
-| **AI / Multi-Agent** | 5 Specialized Agents, ThreadPoolExecutor parallel pipeline, Hybrid LLM/Deterministic Fallback |
+| **Severity Accuracy** | 60.0% |
+| **Priority Accuracy** | 53.3% |
+| **Exception Accuracy** | 80.0% |
+| **Failure Point Accuracy** | 66.7% |
 
----
+Numbers are honest; see docs/accuracy_report.md for the failure-case analysis.
 
-## 📦 Quick Start & Installation
-
-### 1. Clone & Set Up Virtual Environment
+## Quickstart
 
 ```bash
-cd Intelligent-Bug-Diagnosis
-python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+docker compose up -d
+make seed
+```
+Open **http://localhost:5001** in your browser to submit bug reports and review diagnostic breakdowns.
+
+## How Evaluation Works
+
+The evaluation suite at `evaluation/run_eval.py` measures agent predictions against a 15-case ground-truth defect benchmark across diverse languages and noisy logs. A strict CI gate in GitHub Actions validates that triage and log analysis accuracy thresholds are maintained on every pull request.
+
+## Tech Stack
+
+- **Flask 3.1:** REST API routing, application factory, and web presentation layer.
+- **SQLAlchemy 2.0:** SQLite relational database storing bugs, analysis runs, agent results, and feedback.
+- **ChromaDB 1.5:** Local persistent vector database with cosine similarity ranking.
+- **SentenceTransformers:** Dense 384-dimensional embeddings using `all-MiniLM-L6-v2`.
+- **Multi-Agent Orchestrator:** Parallelized execution of Triage, Log Analysis, Duplicate Detection, Root Cause, and Remediation agents.
+
+## Repo Layout
+
+```
+├── agents/          # Diagnostic AI agents and shared Pydantic schemas
+├── archive/         # Archived legacy prototypes kept for provenance
+├── backend/         # Intake processor, stack/log parsing, and Flask blueprints
+├── config/          # Central configuration and logging setups
+├── database/        # SQLAlchemy ORM models and repository CRUD layer
+├── docs/            # Architecture specs, ADRs, runbook, and technical reports
+├── frontend/        # Jinja2 templates and vanilla JavaScript dashboard UI
+├── knowledge_base/  # Ingestion adapters, chunking, embeddings, and RAG retrieval
+├── tests/           # Automated Pytest test suite covering agents and pipelines
+└── uploads/         # Secure storage for uploaded bug reports and log traces
 ```
 
-### 2. Install Dependencies
+## Milestone Status
 
-```bash
-pip install -r requirements.txt
-```
-
-### 3. Configure Environment
-
-```bash
-cp .env.example .env
-```
-
-*(Optional)* To enable live Gemini or OpenAI models, set `LLM_PROVIDER=gemini` and provide `GEMINI_API_KEY=...` in `.env`. By default, the application runs in high-performance **offline deterministic fallback mode** without any external keys required.
-
-### 4. Run the Platform
-
-```bash
-python app.py
-```
-
-Open your browser at **[http://127.0.0.1:5000](http://127.0.0.1:5000)**.
-
----
-
-## 🧪 Running Tests
-
-Execute the comprehensive test suite:
-
-```bash
-pytest tests
-```
-
-Output:
-```
-============================= test session starts ==============================
-collected 25 items
-
-tests/test_agents.py .....                                               [ 20%]
-tests/test_app.py ....                                                   [ 36%]
-tests/test_bug_processor.py .....                                        [ 56%]
-tests/test_database.py ...                                               [ 68%]
-tests/test_embeddings.py ..                                              [ 76%]
-tests/test_ingestion.py ....                                             [ 92%]
-tests/test_retrieval.py ..                                               [100%]
-
-======================== 25 passed in 3.13s =========================
-```
-
----
-
-## 🌐 REST API Reference
-
-| Method | Endpoint | Description |
+| Milestone | Completion | Status & Scope |
 | :--- | :--- | :--- |
-| `GET` | `/api/health` | System health, ChromaDB chunk count, LLM status |
-| `POST` | `/api/bugs` | Submit bug report (JSON payload) |
-| `POST` | `/api/bugs/upload` | Upload log or trace file (`multipart/form-data`) |
-| `GET` | `/api/bugs` | List all submitted bugs (supports pagination) |
-| `GET` | `/api/bugs/<bug_id>` | Fetch bug report details |
-| `POST` | `/api/bugs/<bug_id>/analyze` | Execute 5-agent diagnosis pipeline |
-| `GET` | `/api/bugs/<bug_id>/results` | Fetch complete diagnosis report and evidence |
-| `POST` | `/api/bugs/<bug_id>/feedback` | Submit user accuracy rating and notes |
+| **Milestone 1** | 88% | Foundation, schemas, chunking, RAG vector retrieval, and submission UI |
+| **Milestone 2** | 90% | Triage & Log Analysis agents, Pydantic schemas, and evaluation harness |
+| **Milestone 3** | Partial | Root Cause and Remediation agents (forward work for production diffing) |
 
----
+## Limitations & Roadmap
 
-## 📚 Technical Documentation
+- Knowledge base seeded from public samples not full Kaggle dumps.
+- C++/Go stack traces support is basic.
+- LLM calls fall back to rule-based mode offline.
+- M3 remediation agent is forward work.
 
-- [Research & Defect Analysis](docs/research.md)
-- [System Architecture](docs/system_architecture.md)
-- [Data Model & Database Specifications](docs/data_model.md)
-- [RAG Pipeline & Semantic Retrieval](docs/rag_pipeline.md)
-- [Installation & Execution Guide](docs/installation_guide.md)
+## License & Data
 
----
-
-## 🔒 Security & Privacy
-
-- **Sanitization:** Passwords, API tokens, and authorization headers are automatically redacted from error logs before storage or analysis.
-- **Secure File Storage:** Uploaded files are verified for size (16 MB cap), extension whitelisting, and stored with sanitized filenames to prevent path traversal attacks.
-- **Safe Command Guidance:** Generated terminal commands are explicitly displayed for manual developer review and are **never executed automatically**.
+Seeded with public defect samples from Mozilla Bugzilla, Apache Jira, and Eclipse Bugzilla datasets. See [knowledge_base/datasets/README.md](file:///Users/sushilkumarpatel/Desktop/Intelligent-Bug-Diagnosis/knowledge_base/datasets/README.md) for provenance and licensing details.

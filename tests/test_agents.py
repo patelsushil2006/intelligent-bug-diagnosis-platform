@@ -8,6 +8,14 @@ from database.db import get_db_session
 from database.repositories import BugReportRepository
 
 
+def test_triage_schema_has_all_fields():
+    from agents.triage_agent import TriageAgent
+    from backend.bug_processor import BugProcessor
+    out = TriageAgent().process("NullPointerException in auth.token.validate", "", "")
+    for f in ["severity","priority","affected_component","confidence_score","reasoning"]:
+        assert f in out and out[f] not in (None, "")
+
+
 def test_triage_agent():
     agent = TriageAgent()
     context = {

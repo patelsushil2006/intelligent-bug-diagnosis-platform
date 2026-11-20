@@ -19,6 +19,12 @@ class BugProcessor:
     JS_TRACE_PATTERN = re.compile(
         r'at (?P<func>[^\s(]+)?\s*\(?(?P<file>[^:()]+):(?P<line>\d+):(?P<col>\d+)\)?'
     )
+    CPP_TRACE_PATTERN = re.compile(
+        r'#\d+\s+0x[0-9a-fA-F]+\s+in\s+(?P<func>\S+)\s+\([^)]*\)\s+at\s+(?P<file>[^:]+):(?P<line>\d+)'
+    )
+    GO_TRACE_PATTERN = re.compile(
+        r'(?P<func>[\w\.\/]+)\(.*\)\n\s+(?P<file>[^:]+):(?P<line>\d+)'
+    )
 
     EXCEPTION_PATTERNS = [
         re.compile(r'^(?P<type>[A-Za-z_][\w\.]*(?:Exception|Error|Failure|Fault)):\s*(?P<msg>.*)$', re.MULTILINE),
@@ -118,6 +124,30 @@ class BugProcessor:
                         "language": "javascript"
                     })
 
+        # Parse C++ frames
+        if not frames:
+            cpp_matches = list(cls.CPP_TRACE_PATTERN.finditer(text))
+            if cpp_matches:
+                for m in cpp_matches:
+                    frames.append({
+                        "file": m.group("file").strip(),
+                        "line": int(m.group("line")),
+                        "function": m.group("func").strip(),
+                        "language": "cpp"
+                    })
+
+        # Parse Go frames
+        if not frames:
+            go_matches = list(cls.GO_TRACE_PATTERN.finditer(text))
+            if go_matches:
+                for m in go_matches:
+                    frames.append({
+                        "file": m.group("file").strip(),
+                        "line": int(m.group("line")),
+                        "function": m.group("func").strip(),
+                        "language": "go"
+                    })
+
         # Determine primary user code location (last relevant frame)
         primary_location = None
         primary_line = None
@@ -178,17 +208,20 @@ class BugProcessor:
         hint: Optional[str] = None
     ) -> str:
         """Detect programming language using traces, syntax markers, or explicit hint."""
-        if hint and hint.lower() not in ("unknown", "auto", ""):
-            return hint.capitalize()
+        text = (code_or_trace or "").lower()
 
-        text = code_or_trace.lower()
-
-        # Trace signatures
+        # Trace signatures (takes precedence over user hint)
         if "traceback (most recent call last)" in text or ".py" in text:
             return "Python"
         if "at java." in text or ".java:" in text or "exception in thread" in text:
             return "Java"
-        if "at async " in text or ".js:" in text or ".ts:" in text or "node:internal" in text:
+        if (
+            "at async " in text
+            or ".js:" in text
+            or ".ts:" in text
+            or "node:internal" in text
+            or "at object.<anonymous>" in text
+        ):
             return "JavaScript"
         if "fatal error:" in text or "panic:" in text or ".go:" in text:
             return "Go"
@@ -204,6 +237,10 @@ class BugProcessor:
             return "Java"
         if "const " in text or "let " in text or "console.log" in text:
             return "JavaScript"
+
+        # Fall back to user-supplied hint when no signatures are found
+        if hint and hint.lower() not in ("unknown", "auto", ""):
+            return hint.capitalize()
 
         return "General/Unknown"
 
