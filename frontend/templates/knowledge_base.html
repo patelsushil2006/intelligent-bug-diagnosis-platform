@@ -10,29 +10,25 @@
             <p>Curated software defect records from Mozilla, Apache, and Eclipse archives embedded for RAG semantic retrieval.</p>
         </div>
         <form action="{{ url_for('web.seed_knowledge_base') }}" method="POST">
-            <button type="submit" class="btn btn-secondary">⚡ Populate / Refresh Seeds</button>
+            <button type="submit" class="btn btn-secondary">Populate / Refresh Seeds</button>
         </form>
     </div>
 
     <!-- Knowledge Base Stats -->
     <div class="stats-grid mb-4">
         <div class="stat-card">
-            <div class="stat-icon">📑</div>
             <div class="stat-value">{{ total_count }}</div>
             <div class="stat-label">Relational Defect Records</div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon">🧬</div>
             <div class="stat-value">{{ vector_count }}</div>
             <div class="stat-label">ChromaDB Vector Chunks</div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon">🌐</div>
             <div class="stat-value">3</div>
             <div class="stat-label">Active Adapters (Mozilla, Apache, Eclipse)</div>
         </div>
         <div class="stat-card">
-            <div class="stat-icon">🎯</div>
             <div class="stat-value">all-MiniLM-L6-v2</div>
             <div class="stat-label">Embedding Model (384-dim)</div>
         </div>
