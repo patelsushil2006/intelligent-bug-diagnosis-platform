@@ -1,11 +1,9 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, redirect, url_for
 from database.db import get_db_session
 from database.repositories import (
     BugReportRepository,
     AnalysisRunRepository,
-    HistoricalDefectRepository,
-    AgentResultRepository,
-    RetrievedDefectRepository
+    HistoricalDefectRepository
 )
 from knowledge_base.vector_store import ChromaVectorStore
 from knowledge_base.ingestion import DefectIngestionPipeline
@@ -92,5 +90,5 @@ def knowledge_base():
 def seed_knowledge_base():
     """One-click trigger to seed historical defects from Mozilla, Apache, and Eclipse."""
     pipeline = DefectIngestionPipeline()
-    res = pipeline.seed_initial_knowledge_base()
+    pipeline.seed_initial_knowledge_base()
     return redirect(url_for("web.knowledge_base"))

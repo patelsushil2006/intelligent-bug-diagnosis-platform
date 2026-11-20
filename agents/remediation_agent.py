@@ -27,7 +27,7 @@ class RemediationAgent(BaseAgent):
                 f"Language: {language}\n"
                 f"Historical Resolutions from Knowledge Base:\n" +
                 "\n".join([f"- {b['defect_id']}: {b['resolution']}" for b in similar_bugs[:3]]) +
-                f"\n\nReturn JSON: {{\"recommended_fix\": \"...\", \"commands\": [\"...\"], \"explanation\": \"...\", \"verification\": \"...\", \"risks\": \"...\"}}"
+                "\n\nReturn JSON: {\"recommended_fix\": \"...\", \"commands\": [\"...\"], \"explanation\": \"...\", \"verification\": \"...\", \"risks\": \"...\"}"
             )
             llm_result, mode = self.llm_client.query_json(prompt)
             if llm_result and "recommended_fix" in llm_result:

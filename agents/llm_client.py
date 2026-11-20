@@ -1,7 +1,6 @@
-import os
 import json
 import logging
-from typing import Dict, Any, Tuple, Optional
+from typing import Dict, Any, Tuple
 from config.config import Config
 
 logger = logging.getLogger(__name__)

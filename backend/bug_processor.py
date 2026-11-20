@@ -1,6 +1,4 @@
-import os
 import re
-from pathlib import Path
 from typing import Dict, Any, List, Optional, Tuple
 from werkzeug.utils import secure_filename
 from config.config import Config
@@ -79,7 +77,7 @@ class BugProcessor:
 
         # If no regex match, inspect first/last line
         if exception_type == "UnknownError":
-            lines = [l.strip() for l in text.splitlines() if l.strip()]
+            lines = [line.strip() for line in text.splitlines() if line.strip()]
             for line in reversed(lines):
                 if any(k in line for k in ["Error", "Exception", "panic", "Failed"]):
                     parts = line.split(":", 1)

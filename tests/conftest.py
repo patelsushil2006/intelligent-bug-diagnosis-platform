@@ -3,15 +3,16 @@ import sys
 from pathlib import Path
 import pytest
 
-# Ensure project root is in sys.path
+# Ensure project root is in sys.path before local module resolution
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from config.config import Config
-from app import create_app
-from database.db import engine, init_db
-from database.models import Base
+# Local package imports require sys.path resolution above
+from config.config import Config  # noqa: E402
+from app import create_app  # noqa: E402
+from database.db import engine, init_db  # noqa: E402
+from database.models import Base  # noqa: E402
 
 
 class TestConfig(Config):

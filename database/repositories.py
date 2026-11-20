@@ -8,8 +8,7 @@ from database.models import (
     AgentResult,
     UserFeedback,
     RetrievedDefect,
-    HistoricalDefect,
-    DefectChunk
+    HistoricalDefect
 )
 
 

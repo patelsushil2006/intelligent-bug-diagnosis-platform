@@ -1,9 +1,7 @@
-import os
 import json
 import logging
 from pathlib import Path
 from typing import List, Dict, Any, Optional
-from config.config import Config
 from database.db import get_db_session
 from database.repositories import HistoricalDefectRepository
 from database.models import DefectChunk

@@ -1,7 +1,6 @@
 import logging
 from typing import List, Dict, Any, Optional
 import chromadb
-from chromadb.config import Settings
 from config.config import Config
 from knowledge_base.chunking import DefectSemanticChunk
 

@@ -10,7 +10,7 @@ class ApacheDatasetAdapter(BaseDatasetAdapter):
         if not defect_id:
             return None
 
-        if not defect_id.startswith("APACHE-") and not "-" in defect_id:
+        if not defect_id.startswith("APACHE-") and "-" not in defect_id:
             defect_id = f"APACHE-{defect_id}"
 
         # Support both flat JSON and Jira nested structure

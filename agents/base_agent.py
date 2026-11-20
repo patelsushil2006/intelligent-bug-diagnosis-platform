@@ -1,7 +1,6 @@
 import logging
 from abc import ABC, abstractmethod
 from typing import Dict, Any, Tuple
-from pydantic import BaseModel
 
 logger = logging.getLogger(__name__)
 

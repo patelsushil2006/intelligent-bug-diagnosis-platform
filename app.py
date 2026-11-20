@@ -2,19 +2,21 @@ import os
 import sys
 from pathlib import Path
 
-# Add project root to sys.path
+from flask import Flask, jsonify
+
+# Add project root to sys.path before local module resolution
 BASE_DIR = Path(__file__).resolve().parent
 if str(BASE_DIR) not in sys.path:
     sys.path.insert(0, str(BASE_DIR))
 
-from flask import Flask, jsonify
-from config.config import Config
-from config.logging_config import setup_logging
-from database.db import init_db
-from backend.routes.bug_routes import bug_bp
-from backend.routes.health_routes import health_bp
-from backend.routes.web_routes import web_bp
-from knowledge_base.ingestion import DefectIngestionPipeline
+# Local package imports require sys.path resolution above
+from config.config import Config  # noqa: E402
+from config.logging_config import setup_logging  # noqa: E402
+from database.db import init_db  # noqa: E402
+from backend.routes.bug_routes import bug_bp  # noqa: E402
+from backend.routes.health_routes import health_bp  # noqa: E402
+from backend.routes.web_routes import web_bp  # noqa: E402
+from knowledge_base.ingestion import DefectIngestionPipeline  # noqa: E402
 
 
 def create_app(config_class=Config) -> Flask:

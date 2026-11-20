@@ -1,5 +1,5 @@
 import re
-from typing import List, Set, Dict, Any
+from typing import List, Set
 from knowledge_base.adapters.base_adapter import StandardDefectRecord
 
 
