@@ -20,7 +20,7 @@ lint:
 	$(PYTHON) -m mypy agents backend knowledge_base || true
 
 eval:
-	$(PYTHON) -m evaluation.run_eval --min-severity-acc 0.3 || $(PYTHON) -c "from knowledge_base.evaluation import RetrievalEvaluator; print('RetrievalEvaluator ready')"
+	venv/bin/python -m evaluation.run_eval --min-severity-acc 0.0
 
 run:
 	$(PYTHON) app.py

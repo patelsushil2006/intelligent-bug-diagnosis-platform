@@ -1,15 +1,27 @@
-# Accuracy & Evaluation Failure-Case Report
+# Accuracy & Evaluation Report
 
-## Overview
-This report documents the performance of the Triage and Log Analysis agents across our 15-case ground-truth defect benchmark (`evaluation/reports/eval_latest.json`).
+## Summary Results
 
-## Performance Summary (n=15)
-- **Severity Accuracy:** 60.0% (9/15)
-- **Priority Accuracy:** 53.3% (8/15)
-- **Exception Type Accuracy:** 80.0% (12/15)
-- **Failure Point Accuracy:** 66.7% (10/15)
+| Field | Accuracy | n |
+| :--- | :--- | :--- |
+| Severity Accuracy | 86.7% | 15 |
+| Priority Accuracy | 86.7% | 15 |
+| Exception Accuracy | 93.3% | 15 |
+| Failure Point Accuracy | 73.3% | 15 |
 
-## Failure-Case Analysis
-1. **Ambiguous Stack Traces:** Stack traces containing multiple nested chained exceptions (e.g., `Caused by:`) sometimes resulted in the outermost wrapper exception being captured rather than the root cause.
-2. **Cosmetic vs. Low Severity:** Heuristic keywords for cosmetic/documentation bugs occasionally conflicted when reports mentioned words like "failure in documentation".
-3. **Noisy Log Lines:** Raw application logs without standard timestamp and log-level prefixes lowered failure point precision.
+## Failure Cases
+
+- **gt-06**: Crash with OutOfMemoryError in memory manager cache
+  - Failure point mismatch (got: manager.java:34, expected: memorystore.java:82)
+- **gt-08**: NullPointerException in auth token verification filter
+  - Severity mismatch (got: Medium, expected: High)
+  - Priority mismatch (got: P3, expected: P2)
+  - Failure point mismatch (got: securitychain.java:30, expected: tokenfilter.java:64)
+- **gt-11**: Network Error when fetching user profile data
+  - Failure point mismatch (got: unknown:0, expected: views/profile.js:18)
+- **gt-14**: Segmentation fault memory crash in proxy engine balancer
+  - Exception mismatch (got: unknownerror, expected: sigsegv)
+- **gt-15**: Runtime panic nil pointer dereference in gateway handler
+  - Severity mismatch (got: Medium, expected: High)
+  - Priority mismatch (got: P3, expected: P2)
+  - Failure point mismatch (got: /go/src/gateway/main.go:24, expected: /go/src/gateway/server.go:87)
