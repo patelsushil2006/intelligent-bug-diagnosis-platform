@@ -37,7 +37,8 @@ flowchart TD
 
     UI --> API
     API --> INTAKE
-    INTAKE --> Storage
+    INTAKE --> SQL
+    INTAKE --> CHROMA
     API --> ORCH
     ORCH --> TRIAGE
     TRIAGE --> LOGS
@@ -46,7 +47,7 @@ flowchart TD
     LOGS --> RC
     DUP --> RC
     RC --> REM
-    REM --> Storage
+    REM --> SQL
     REM --> API
     API --> UI
 ```
@@ -88,29 +89,29 @@ The benchmark comprises 15 curated defect scenarios spanning 5 programming langu
 
 These numbers are produced by the deterministic offline rule-based path — the reproducible floor that runs in CI without any LLM API key. When an LLM provider is configured, accuracy improves; the offline number is reported here because it is verifiable by anyone who clones the repository.
 
-See [docs/accuracy_report.md](file:///Users/sushilkumarpatel/Desktop/Intelligent-Bug-Diagnosis/docs/accuracy_report.md) for the complete confusion matrix and failure-case analysis.
+See [docs/accuracy_report.md](docs/accuracy_report.md) for the complete confusion matrix and failure-case analysis.
 
 ## Evaluation Methodology
-Evaluation is automated through an empirical test suite executed against `evaluation/datasets/ground_truth.jsonl`, which contains 15 hand-labeled defect cases with verified expected outcomes. The benchmark runner at `evaluation/run_eval.py` executes each case through the active diagnostic pipeline, recording exact matches for severity and priority, case-insensitive substring matches for exception types, and bidirectional path containment for failure locations. The evaluation runner serves as a non-negotiable CI gate in GitHub Actions, halting the build if severity accuracy drops below configured thresholds. Individual failure modes, discrepancies, and parser edge cases are automatically written to `evaluation/reports/eval_latest.json` and formatted into `docs/accuracy_report.md`.
+Evaluation is automated through an empirical test suite executed against [evaluation/datasets/ground_truth.jsonl](evaluation/datasets/ground_truth.jsonl), which contains 15 hand-labeled defect cases with verified expected outcomes. The benchmark runner at [evaluation/run_eval.py](evaluation/run_eval.py) executes each case through the active diagnostic pipeline, recording exact matches for severity and priority, case-insensitive substring matches for exception types, and bidirectional path containment for failure locations. The evaluation runner serves as a non-negotiable CI gate in GitHub Actions, halting the build if severity accuracy drops below configured thresholds ([ADR 0003](docs/adr/0003-evaluation-methodology-and-gates.md)). Individual failure modes, discrepancies, and parser edge cases are automatically written to [evaluation/reports/eval_latest.json](evaluation/reports/eval_latest.json) and formatted into [docs/accuracy_report.md](docs/accuracy_report.md).
 
 ## Tech Stack
 
 | Layer | Technology | Why |
 | :--- | :--- | :--- |
-| **Web framework** | Flask 3.1 | Lightweight, predictable routing, adequate for single-node deployment without framework overhead (ADR 0001). |
+| **Web framework** | Flask 3.1 | Lightweight, predictable routing, adequate for single-node deployment without framework overhead. |
 | **ORM** | SQLAlchemy 2.0 | Type-safe declarative queries, schema relationships, and migration-ready persistence across 7 entities. |
-| **Vector store** | ChromaDB 1.5 | Embedded in-process vector store requiring zero external database administration or container daemons (ADR 0001). |
-| **Embeddings** | SentenceTransformers `all-MiniLM-L6-v2` | Dense 384-dimensional vector space with optimal retrieval quality and low memory footprint on CPU (docs/research.md). |
-| **LLM client** | Gemini / OpenAI / offline rule fallback | Provider-agnostic abstraction with deterministic heuristic fallback when API keys are absent (ADR 0002). |
-| **Validation** | Pydantic 2.10 | Strict runtime schema enforcement and validation on all inter-agent data transfers (agents/schemas.py). |
+| **Vector store** | ChromaDB 1.5 | Embedded in-process vector store requiring zero external database administration or container daemons ([ADR 0001](docs/adr/0001-use-chromadb-over-pgvector.md)). |
+| **Embeddings** | SentenceTransformers `all-MiniLM-L6-v2` | Dense 384-dimensional vector space with optimal retrieval quality and low memory footprint on CPU ([docs/research.md](docs/research.md)). |
+| **LLM client** | Gemini / OpenAI / offline rule fallback | Provider-agnostic abstraction with deterministic heuristic fallback when API keys are absent ([ADR 0002](docs/adr/0002-rule-based-fallback-for-llm-providers.md)). |
+| **Validation** | Pydantic 2.10 | Strict runtime schema enforcement and validation on all inter-agent data transfers ([agents/schemas.py](agents/schemas.py)). |
 | **Testing** | Pytest 9.2 & Pytest-Cov | Hermetic unit, integration, and coverage verification executed across 26 test targets. |
 | **Static Analysis** | Ruff 0.9 & Mypy 1.15 | Fast linting, code formatting, and static type analysis enforcing codebase consistency. |
 
 ## Quickstart
 
 ```bash
-git clone <repo>
-cd Intelligent-Bug-Diagnosis
+git clone https://github.com/patelsushil2006/intelligent-bug-diagnosis-platform.git
+cd intelligent-bug-diagnosis-platform
 cp .env.example .env    # add GEMINI_API_KEY or OPENAI_API_KEY, or leave blank for offline mode
 docker compose up -d
 make seed
@@ -223,4 +224,4 @@ Expected response:
 - M3 remediation agent is forward work.
 
 ## License & Data
-The platform is licensed under the Apache 2.0 License. Seed defect records are derived from public datasets provided by Mozilla Bugzilla, the Apache Software Foundation, and the Eclipse Foundation. For detailed data provenance, schema adaptations, and usage guidelines, refer to [knowledge_base/datasets/README.md](file:///Users/sushilkumarpatel/Desktop/Intelligent-Bug-Diagnosis/knowledge_base/datasets/README.md).
+The platform is licensed under the Apache 2.0 License. Seed defect records are derived from public datasets provided by Mozilla Bugzilla, the Apache Software Foundation, and the Eclipse Foundation. For detailed data provenance, schema adaptations, and usage guidelines, refer to [knowledge_base/datasets/README.md](knowledge_base/datasets/README.md).
