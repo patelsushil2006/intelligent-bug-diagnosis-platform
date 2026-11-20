@@ -17,8 +17,20 @@ dependencies = [
 ]
 
 [tool.ruff]
-line-length = 100
+line-length = 120
 target-version = "py311"
+exclude = ["venv", ".venv", "env", "archive", "__pycache__", ".git", "evaluation/reports", "vector_store"]
+
+[tool.ruff.lint]
+# Block on real errors only — pyflakes + pycodestyle errors. Defer stylistic rules to v1.0.1.
+select = ["E4", "E7", "E9", "F"]
+ignore = ["E501"]
+# E4: import errors, E7: statement errors, E9: runtime errors, F: pyflakes (unused vars, undefined names)
+# Ignored: E501 line-too-long (handled by formatter), all stylistic UP/BLE/SIM/RUF/I/TID/PIE/G/PTH categories.
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["F401", "F841"]
+"evaluation/*" = ["F401"]
 
 [tool.mypy]
 python_version = "3.11"
